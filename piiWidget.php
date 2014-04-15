@@ -20,9 +20,22 @@ class piiWidget extends WP_Widget {
     public function widget( $args, $instance ) {
 	$title = apply_filters( 'widget_title', $instance['title'] );
 	// before and after widget arguments are defined by themes
+
 	echo $args['before_widget'];
 	if ( ! empty( $title ) )
 	    echo $args['before_title'] . $title . $args['after_title'];
+
+	unset($instance['title']);
+	echo '<ul >';
+	foreach($instance as $key => $value) {
+
+	    if($this->is($key)== 'link')
+		$value = '<a  href="'.$value.'" >'.$this->getLabel($key).'</a>';
+
+	    echo '<li>' .$value. '</li>';
+
+	}
+	echo '</ul>';
 
 	// This is where you run the code and display the output
 	echo $args['after_widget'];
@@ -31,24 +44,27 @@ class piiWidget extends WP_Widget {
     // Widget Backend
     public function form( $instance ) {
 	// Widget admin form
-	?>
+?>
+
 	<p>
 
-	<?php foreach ($this->parametersList() as $key => $param ) {
-	    if ( isset( $instance[ $key ] ) ) {
-		$value = $instance[ $key ];
-	    }
-	    else {
+<?php foreach ($this->parametersList() as $key => $param ) {
 
-		if(!empty($param['default_value']))
-		    $value = $param['default_value'] ;
-		else
-		    $value = '';
-	    }
+    if ( isset( $instance[ $key ] ) ) {
+	$value = $instance[ $key ];
 
-	    echo $this->fieldsSet($key, $param['label'] , $param['type'], $value);
-	}
-	?>
+    }
+    else {
+
+	if(!empty($param['default_value']))
+	    $value = $param['default_value'] ;
+	else
+	    $value = '';
+    }
+
+    echo $this->fieldsSet($key, $param['label'] , $param['type'], $value);
+}
+?>
 
 	</p>
 <?php
@@ -77,16 +93,19 @@ class piiWidget extends WP_Widget {
 	    "facebook" => [
 		"label" =>"Facebook",
 		"type" => "text",
-		"default_value" => "Url Facebook page"
+		"default_value" => "Url Facebook page",
+		"is" => "link"
 	    ] ,
 	    "twitter" =>[
 		"label" => "Twitter",
 		"type" => "text",
+		"is" => "link",
 		"default_value" => "Url Twitter page"
 	    ] ,
 	    "pinterest" =>[
 		"label"=>"Pinterest",
 		"type"=>"text",
+		"is"	=> "link",
 		"default_value" => "Url Pinterest page"
 	    ],
 	    "phone" =>[
@@ -104,7 +123,8 @@ class piiWidget extends WP_Widget {
 	    "address" =>[
 		"label"=>"Address",
 		"type"=>"textarea",
-	    ],
+	    ]
+
 	];
 
     }
@@ -112,21 +132,40 @@ class piiWidget extends WP_Widget {
     public function fieldsSet($key , $label , $type, $default_value = "")
     {
 	$output = '<label for="'.$this->get_field_id( $key ).'">'. __($label.":" ).'</label>';
-	if($type == "textarea"){
-
+	switch($type){
+	case  "textarea":
 	    $output .= '<textarea class="widefat" id="'.$this->get_field_id( $key ).'"
-		name="'.$this->get_field_name( $key ).'" >'.esc_attr( $default_value ).' </textarea>';
+		name="'.$this->get_field_name( $key ).'" >'.trim(esc_attr( $default_value )).' </textarea>';
+	    break;
 
-	}
-	else{
+	case 'checkbox' :
+	    $output .= '<input class="widefat" id="'. $this->get_field_id( $key ).'"
+		name="'.$this->get_field_name( $key ).'" type="'.$type.'"
+		value="1" '. checked( '1', $default_value , false ).'  />';
 
+	    break ;
+
+	default:
 	    $output .= '<input class="widefat" id="'. $this->get_field_id( $key ).'"
 		name="'.$this->get_field_name( $key ).'" type="'.$type.'"
 		value="'.esc_attr( $default_value ).'" />';
+	    break;
+
 
 	}
+
+
 	return $output;
 
     }
-
+    public function is ($key){
+	$param = $this->parametersList()[$key];
+	if(!isset($param['is']))
+	    return;
+	return $param['is'];
+    }
+    public function getLabel ($key){
+	$param = $this->parametersList()[$key];
+	return $param['label'];
+    }
 }
