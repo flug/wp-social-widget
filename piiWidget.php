@@ -30,7 +30,7 @@ class piiWidget extends WP_Widget {
 	foreach($instance as $key => $value) {
 
 	    if($this->is($key)== 'link')
-		$value = '<a  class="link-soc link-soc-'.$key.'" href="'.$value.'" >'.$this->getLabel($key).'</a>';
+		$value = '<a  class="link-soc link-soc-'.$key.'" href="'.$value.'" target="_blank" >'.$this->getLabel($key).'</a>';
 
 	    echo '<li class="list-soc list-soc-'.$key.'">' .$value. '</li>';
 
